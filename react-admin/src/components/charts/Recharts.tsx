@@ -1,15 +1,18 @@
-import React, {useEffect} from 'react';
+import React, {useEffect, useState} from 'react';
 import ReactEcharts from 'echarts-for-react';
+import { notification } from 'antd';
 import { getLotteryNum } from '../../axios'
 
+const position = 0
+const ordNumArr = ['3', '4', '5', '6', '7']
 const option = {
     color: (params: any) => {
-        return params.data % 2 === 1 ? '#00FA9A' : '#FF4500'
+        return ordNumArr.includes(params.data) ? '#00FA9A' : '#FF4500'
     },
     tooltip : {
         trigger: 'axis',
-        axisPointer : {            // 坐标轴指示器，坐标轴触发有效
-            type : 'shadow'        // 默认为直线，可选为：'line' | 'shadow'
+        axisPointer : {
+            type : 'shadow'
         }
     },
     grid: {
@@ -21,7 +24,7 @@ const option = {
     xAxis : [
         {
             type : 'category',
-            data : ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+            data : [],
             axisTick: {
                 alignWithLabel: true
             }
@@ -34,25 +37,79 @@ const option = {
     ],
     series : [
         {
-            name:'直接访问',
+            name:'号码',
             type:'bar',
-            barWidth: '60%',
-            data:[11, 52, 200, 334, 391, 330, 221]
+            data:[],
+            label: {
+                show: true
+            }
         }
-    ]
+    ],
+    dataZoom: [
+        {
+            show: true,
+            start: 0,
+            end: 50
+        },
+    ],
 };
+let timeid: any
+const EchartsBar = (): React.ReactElement => {
+    let [options, setOptions] = useState(option);
+    useEffect(() => {
+        async function fetchData() {
+            let res: Array<object> = await getLotteryNum({lotCode: 'TEQ28'})
+            const xData = res.map((k: any) => k.qiHao.slice(k.qiHao.length - 3, k.qiHao.length))
+            const yData = res.map((k: any) => k.haoMa.charAt(position))
+            if (!res) return
+            let times: number = 0
+            let max: number = 0
+            res.forEach((num: any) => {
+                let haoMao: string = num.haoMa.charAt(position)
+                if (!ordNumArr.includes(haoMao)) {
+                    times++
+                } else {
+                    if (times > max) {
+                        max = times
+                    }
+                    times = 0
+                }
+            })
+            notification.warning({
+                message: `总共连续没中${max}期`
+            })
+            setOptions(oldOptions => ({
+                ...oldOptions,
+                xAxis : [
+                    {
+                        type : 'category',
+                        data : xData,
+                        axisTick: {
+                            alignWithLabel: true
+                        }
+                    }
+                ],
+                series : [
+                    {
+                        name: position === 0 ? '百位': position === 2 ? '十位' : '个位',
+                        type:'bar',
+                        data: yData,
+                        label: {
+                            show: true
+                        }
+                    },
+                ]
+            }))
+        }
+        fetchData()
+       timeid = setInterval(() => fetchData(), 60000)
+        return ( ) => clearInterval(timeid)
+    }, []);
 
-const EchartBar = () => {
-    // @ts-ignore
-    useEffect(async () => {
-       let res: any = await getLotteryNum({lotCode: 'TEQ28'})
-        console.log(res)
-    }, [])
-
-   return <ReactEcharts
-        option={option}
-        style={{ height: '100%', width: '100%' }}
-        className={'react_for_echarts'}
+    return <ReactEcharts
+    option={options}
+    style={{height: '100%', width: '100%'}}
+    className={'react_for_echarts'}
     />
-}
-export default EchartBar
+};
+export default EchartsBar

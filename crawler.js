@@ -23,27 +23,27 @@ function handlerOrder(haoMa) {
 
 function getNum(qiHao) {
   request.get('http://www.175198.com/lotteryV3/lotLast.do')
-    .set(headers)
-    .query({
-      qiHao,
-      lotCode
-    })
-    .end((err, res) => {
-      if (err) throw new Error(err)
-      const response = JSON.parse(res.text)
-      console.log(response)
-      if (response.success) {
-        handlerOrder(response.last.haoMa)
-        setTimeout(() => {
-          getNum(orderQihao = +response.last.qiHao + 1)
-          console.log('下一期请求期号:' + orderQihao)
-        }, queryTimeout)
-      } else {
-        timeId = setTimeout(() => {
-          getNum(qiHao)
-        }, queryTimeout)
-      }
-    })
+      .set(headers)
+      .query({
+        qiHao,
+        lotCode
+      })
+      .end((err, res) => {
+        if (err) throw new Error(err)
+        const response = JSON.parse(res.text)
+        console.log(response)
+        if (response.success) {
+          handlerOrder(response.last.haoMa)
+          setTimeout(() => {
+            getNum(orderQihao = +response.last.qiHao + 1)
+            console.log('下一期请求期号:' + orderQihao)
+          }, queryTimeout)
+        } else {
+          timeId = setTimeout(() => {
+            getNum(qiHao)
+          }, queryTimeout)
+        }
+      })
 }
 
 ;(fn = async () => {
@@ -53,8 +53,7 @@ function getNum(qiHao) {
     // 打开开发者工具, 当此值为true时, headless总为false
     devtools: false,
     // 关闭headless模式, 不会打开浏览器
-    headless: true,
-    executablePath: 'C:\\Users\\Administrator\\AppData\\Local\\Google\\Chrome\\Application\\chrome.exe'
+    headless: true
   }))
   const page = await browser.newPage()
   await page.goto(url)

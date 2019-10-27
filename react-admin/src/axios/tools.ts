@@ -38,7 +38,7 @@ export const get = ({ url, msg = '接口异常', config }: IFRequestParam) =>
 export const post = ({ url, data, msg = '接口异常', config = { headers: { 'Content-Type': 'application/x-www-form-urlencoded'}} }: IFRequestParam) =>
     axios
         .post(url, qs.stringify(data), config)
-        .then(res => res.data)
+        .then(res => res.data.data)
         .catch(err => {
             console.log(err);
             message.warn(msg);

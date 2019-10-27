@@ -7,7 +7,7 @@ import * as config from './config';
 
 
 export const getLotteryNum = ({ lotCode = 'TEQ28', recentDay = 1, rows = 200, timestamp = +new Date()}: config.IFRequestLottery ) => {
-    post({
+    return post({
         url: config.BASE_URL + '/getNum',
         data: {
             lotCode,
